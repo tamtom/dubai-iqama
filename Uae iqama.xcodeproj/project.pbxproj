@@ -6,14 +6,86 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		8BB42CBA2F2109EE0043A040 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8BB42CB92F2109EE0043A040 /* WidgetKit.framework */; };
+		8BB42CBC2F2109EE0043A040 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8BB42CBB2F2109EE0043A040 /* SwiftUI.framework */; };
+		8BB42CCB2F2109F00043A040 /* widgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 8BB42CB72F2109EE0043A040 /* widgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		8BB42CC92F2109F00043A040 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8BB42C9D2F2109750043A040 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8BB42CB62F2109EE0043A040;
+			remoteInfo = widgetExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		8BB42CD02F2109F00043A040 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				8BB42CCB2F2109F00043A040 /* widgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		8BB42CA52F2109750043A040 /* Uae iqama.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Uae iqama.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8BB42CB72F2109EE0043A040 /* widgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = widgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		8BB42CB92F2109EE0043A040 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		8BB42CBB2F2109EE0043A040 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		8BB42CCC2F2109F00043A040 /* Exceptions for "widget" folder in "widgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 8BB42CB62F2109EE0043A040 /* widgetExtension */;
+		};
+		8BB42D3F2F21110D0043A040 /* Exceptions for "Uae iqama" folder in "widgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				prayer_times_2026/month_01.json,
+				prayer_times_2026/month_02.json,
+				prayer_times_2026/month_03.json,
+				prayer_times_2026/month_04.json,
+				prayer_times_2026/month_05.json,
+				prayer_times_2026/month_06.json,
+				prayer_times_2026/month_07.json,
+				prayer_times_2026/month_08.json,
+				prayer_times_2026/month_09.json,
+				prayer_times_2026/month_10.json,
+				prayer_times_2026/month_11.json,
+				prayer_times_2026/month_12.json,
+			);
+			target = 8BB42CB62F2109EE0043A040 /* widgetExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		8BB42CA72F2109750043A040 /* Uae iqama */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				8BB42D3F2F21110D0043A040 /* Exceptions for "Uae iqama" folder in "widgetExtension" target */,
+			);
 			path = "Uae iqama";
+			sourceTree = "<group>";
+		};
+		8BB42CBD2F2109EE0043A040 /* widget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				8BB42CCC2F2109F00043A040 /* Exceptions for "widget" folder in "widgetExtension" target */,
+			);
+			path = widget;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -26,6 +98,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		8BB42CB42F2109EE0043A040 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8BB42CBC2F2109EE0043A040 /* SwiftUI.framework in Frameworks */,
+				8BB42CBA2F2109EE0043A040 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -33,6 +114,8 @@
 			isa = PBXGroup;
 			children = (
 				8BB42CA72F2109750043A040 /* Uae iqama */,
+				8BB42CBD2F2109EE0043A040 /* widget */,
+				8BB42CB82F2109EE0043A040 /* Frameworks */,
 				8BB42CA62F2109750043A040 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,8 +124,18 @@
 			isa = PBXGroup;
 			children = (
 				8BB42CA52F2109750043A040 /* Uae iqama.app */,
+				8BB42CB72F2109EE0043A040 /* widgetExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		8BB42CB82F2109EE0043A040 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				8BB42CB92F2109EE0043A040 /* WidgetKit.framework */,
+				8BB42CBB2F2109EE0043A040 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -55,10 +148,12 @@
 				8BB42CA12F2109750043A040 /* Sources */,
 				8BB42CA22F2109750043A040 /* Frameworks */,
 				8BB42CA32F2109750043A040 /* Resources */,
+				8BB42CD02F2109F00043A040 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				8BB42CCA2F2109F00043A040 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				8BB42CA72F2109750043A040 /* Uae iqama */,
@@ -69,6 +164,28 @@
 			productName = "Uae iqama";
 			productReference = 8BB42CA52F2109750043A040 /* Uae iqama.app */;
 			productType = "com.apple.product-type.application";
+		};
+		8BB42CB62F2109EE0043A040 /* widgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8BB42CCD2F2109F00043A040 /* Build configuration list for PBXNativeTarget "widgetExtension" */;
+			buildPhases = (
+				8BB42CB32F2109EE0043A040 /* Sources */,
+				8BB42CB42F2109EE0043A040 /* Frameworks */,
+				8BB42CB52F2109EE0043A040 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				8BB42CBD2F2109EE0043A040 /* widget */,
+			);
+			name = widgetExtension;
+			packageProductDependencies = (
+			);
+			productName = widgetExtension;
+			productReference = 8BB42CB72F2109EE0043A040 /* widgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -81,6 +198,9 @@
 				LastUpgradeCheck = 2620;
 				TargetAttributes = {
 					8BB42CA42F2109750043A040 = {
+						CreatedOnToolsVersion = 26.2;
+					};
+					8BB42CB62F2109EE0043A040 = {
 						CreatedOnToolsVersion = 26.2;
 					};
 				};
@@ -100,12 +220,20 @@
 			projectRoot = "";
 			targets = (
 				8BB42CA42F2109750043A040 /* Uae iqama */,
+				8BB42CB62F2109EE0043A040 /* widgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		8BB42CA32F2109750043A040 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8BB42CB52F2109EE0043A040 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -122,7 +250,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		8BB42CB32F2109EE0043A040 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		8BB42CCA2F2109F00043A040 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8BB42CB62F2109EE0043A040 /* widgetExtension */;
+			targetProxy = 8BB42CC92F2109F00043A040 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		8BB42CAE2F2109770043A040 /* Debug */ = {
@@ -255,6 +398,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Dubai Iqama";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -285,6 +429,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Dubai Iqama";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -297,6 +442,66 @@
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		8BB42CCE2F2109F00043A040 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = widget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = widget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.tamimi.shared.Uae-iqama.widget";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		8BB42CCF2F2109F00043A040 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = widget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = widget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.tamimi.shared.Uae-iqama.widget";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
@@ -320,6 +525,15 @@
 			buildConfigurations = (
 				8BB42CB12F2109770043A040 /* Debug */,
 				8BB42CB22F2109770043A040 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8BB42CCD2F2109F00043A040 /* Build configuration list for PBXNativeTarget "widgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8BB42CCE2F2109F00043A040 /* Debug */,
+				8BB42CCF2F2109F00043A040 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
