@@ -10,17 +10,19 @@ let size = NSSize(width: 660, height: 400)
 let img = NSImage(size: size)
 img.lockFocus()
 
-// Celestial gradient — matches the app's dusk palette.
+// Deep celestial gradient — kept dark so Finder's icon-view labels render in
+// white (Finder picks light label text + halo on dark DMG backgrounds).
 let g = NSGradient(colors: [
-    NSColor(srgbRed: 0.08, green: 0.07, blue: 0.20, alpha: 1),
-    NSColor(srgbRed: 0.22, green: 0.12, blue: 0.32, alpha: 1),
+    NSColor(srgbRed: 0.03, green: 0.03, blue: 0.08, alpha: 1),
+    NSColor(srgbRed: 0.09, green: 0.07, blue: 0.16, alpha: 1),
 ])!
 g.draw(in: NSRect(origin: .zero, size: size), angle: 90)
 
-// Subtle vignette toward the bottom for readability of the hint text.
+// Extra darkening toward the bottom where the icon labels sit, so the label
+// text stays clearly white against it.
 let vignette = NSGradient(colors: [
     NSColor.black.withAlphaComponent(0.0),
-    NSColor.black.withAlphaComponent(0.28),
+    NSColor.black.withAlphaComponent(0.45),
 ])!
 vignette.draw(in: NSRect(origin: .zero, size: size), angle: 270)
 

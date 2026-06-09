@@ -62,7 +62,7 @@ struct ContentView: View {
                     footer
                 }
                 .padding(.horizontal, 32)
-                .padding(.top, 44)               // sit below the traffic-light row
+                .padding(.top, 60)               // clear the macOS 26 window controls
                 .padding(.bottom, 24)
             }
         }
