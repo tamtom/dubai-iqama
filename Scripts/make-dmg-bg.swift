@@ -7,8 +7,24 @@ import AppKit
 let outPath = CommandLine.arguments.dropFirst().first ?? "/tmp/dmg-bg.png"
 
 let size = NSSize(width: 660, height: 400)
-let img = NSImage(size: size)
-img.lockFocus()
+
+// Render into an explicit opaque (no-alpha) RGB bitmap at 1x. Finder rejects
+// alpha-channel PNGs as window backgrounds, and a 2x lockFocus capture also
+// confuses it — so we control the bitmap precisely.
+let rep = NSBitmapImageRep(
+    bitmapDataPlanes: nil,
+    pixelsWide: Int(size.width),
+    pixelsHigh: Int(size.height),
+    bitsPerSample: 8,
+    samplesPerPixel: 3,            // RGB, no alpha
+    hasAlpha: false,
+    isPlanar: false,
+    colorSpaceName: .deviceRGB,
+    bytesPerRow: 0,
+    bitsPerPixel: 0)!
+
+NSGraphicsContext.saveGraphicsState()
+NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
 
 // Deep celestial gradient — kept dark so Finder's icon-view labels render in
 // white (Finder picks light label text + halo on dark DMG backgrounds).
@@ -56,13 +72,9 @@ let titleAttrs: [NSAttributedString.Key: Any] = [
 NSAttributedString(string: "Dubai Iqama", attributes: titleAttrs)
     .draw(in: NSRect(x: 0, y: 340, width: 660, height: 30))
 
-img.unlockFocus()
+NSGraphicsContext.restoreGraphicsState()
 
-guard
-    let tiff = img.tiffRepresentation,
-    let rep = NSBitmapImageRep(data: tiff),
-    let png = rep.representation(using: .png, properties: [:])
-else {
+guard let png = rep.representation(using: .png, properties: [:]) else {
     FileHandle.standardError.write(Data("Failed to render PNG\n".utf8))
     exit(1)
 }
