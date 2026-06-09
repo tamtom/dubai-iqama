@@ -37,7 +37,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		8BB42CA52F2109750043A040 /* Uae iqama.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Uae iqama.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8BB42CA52F2109750043A040 /* Dubai iqama.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Dubai iqama.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8BB42CB72F2109EE0043A040 /* widgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = widgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		8BB42CB92F2109EE0043A040 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		8BB42CBB2F2109EE0043A040 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -51,7 +51,7 @@
 			);
 			target = 8BB42CB62F2109EE0043A040 /* widgetExtension */;
 		};
-		8BB42D3F2F21110D0043A040 /* Exceptions for "Uae iqama" folder in "widgetExtension" target */ = {
+		8BB42D3F2F21110D0043A040 /* Exceptions for "Dubai iqama" folder in "widgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				prayer_times_2026/month_01.json,
@@ -72,12 +72,12 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		8BB42CA72F2109750043A040 /* Uae iqama */ = {
+		8BB42CA72F2109750043A040 /* Dubai iqama */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				8BB42D3F2F21110D0043A040 /* Exceptions for "Uae iqama" folder in "widgetExtension" target */,
+				8BB42D3F2F21110D0043A040 /* Exceptions for "Dubai iqama" folder in "widgetExtension" target */,
 			);
-			path = "Uae iqama";
+			path = "Dubai iqama";
 			sourceTree = "<group>";
 		};
 		8BB42CBD2F2109EE0043A040 /* widget */ = {
@@ -113,7 +113,7 @@
 		8BB42C9C2F2109750043A040 = {
 			isa = PBXGroup;
 			children = (
-				8BB42CA72F2109750043A040 /* Uae iqama */,
+				8BB42CA72F2109750043A040 /* Dubai iqama */,
 				8BB42CBD2F2109EE0043A040 /* widget */,
 				8BB42CB82F2109EE0043A040 /* Frameworks */,
 				8BB42CA62F2109750043A040 /* Products */,
@@ -123,7 +123,7 @@
 		8BB42CA62F2109750043A040 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8BB42CA52F2109750043A040 /* Uae iqama.app */,
+				8BB42CA52F2109750043A040 /* Dubai iqama.app */,
 				8BB42CB72F2109EE0043A040 /* widgetExtension.appex */,
 			);
 			name = Products;
@@ -141,9 +141,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		8BB42CA42F2109750043A040 /* Uae iqama */ = {
+		8BB42CA42F2109750043A040 /* Dubai iqama */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 8BB42CB02F2109770043A040 /* Build configuration list for PBXNativeTarget "Uae iqama" */;
+			buildConfigurationList = 8BB42CB02F2109770043A040 /* Build configuration list for PBXNativeTarget "Dubai iqama" */;
 			buildPhases = (
 				8BB42CA12F2109750043A040 /* Sources */,
 				8BB42CA22F2109750043A040 /* Frameworks */,
@@ -156,13 +156,13 @@
 				8BB42CCA2F2109F00043A040 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				8BB42CA72F2109750043A040 /* Uae iqama */,
+				8BB42CA72F2109750043A040 /* Dubai iqama */,
 			);
-			name = "Uae iqama";
+			name = "Dubai iqama";
 			packageProductDependencies = (
 			);
-			productName = "Uae iqama";
-			productReference = 8BB42CA52F2109750043A040 /* Uae iqama.app */;
+			productName = "Dubai iqama";
+			productReference = 8BB42CA52F2109750043A040 /* Dubai iqama.app */;
 			productType = "com.apple.product-type.application";
 		};
 		8BB42CB62F2109EE0043A040 /* widgetExtension */ = {
@@ -205,7 +205,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 8BB42CA02F2109750043A040 /* Build configuration list for PBXProject "Uae iqama" */;
+			buildConfigurationList = 8BB42CA02F2109750043A040 /* Build configuration list for PBXProject "Dubai iqama" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -219,7 +219,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				8BB42CA42F2109750043A040 /* Uae iqama */,
+				8BB42CA42F2109750043A040 /* Dubai iqama */,
 				8BB42CB62F2109EE0043A040 /* widgetExtension */,
 			);
 		};
@@ -405,7 +405,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.tamimi.shared.Uae-iqama";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.tamimi.shared.Dubai-iqama";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -436,7 +436,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.tamimi.shared.Uae-iqama";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.tamimi.shared.Dubai-iqama";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -467,7 +467,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.2;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.tamimi.shared.Uae-iqama.widget";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.tamimi.shared.Dubai-iqama.widget";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -497,7 +497,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.2;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.tamimi.shared.Uae-iqama.widget";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.tamimi.shared.Dubai-iqama.widget";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -511,7 +511,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		8BB42CA02F2109750043A040 /* Build configuration list for PBXProject "Uae iqama" */ = {
+		8BB42CA02F2109750043A040 /* Build configuration list for PBXProject "Dubai iqama" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8BB42CAE2F2109770043A040 /* Debug */,
@@ -520,7 +520,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		8BB42CB02F2109770043A040 /* Build configuration list for PBXNativeTarget "Uae iqama" */ = {
+		8BB42CB02F2109770043A040 /* Build configuration list for PBXNativeTarget "Dubai iqama" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8BB42CB12F2109770043A040 /* Debug */,

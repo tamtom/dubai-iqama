@@ -1,6 +1,6 @@
 //
-//  Uae_iqamaApp.swift
-//  Uae iqama
+//  Dubai_iqamaApp.swift
+//  Dubai iqama
 //
 //  Created by Omar Altamimi on 21/01/2026.
 //
@@ -8,7 +8,7 @@
 import SwiftUI
 
 @main
-struct Uae_iqamaApp: App {
+struct Dubai_iqamaApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     var body: some Scene {

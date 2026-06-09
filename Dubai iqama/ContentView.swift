@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  Uae iqama
+//  Dubai iqama
 //
 //  Created by Omar Altamimi on 21/01/2026.
 //

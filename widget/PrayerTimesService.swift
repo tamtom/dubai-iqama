@@ -58,8 +58,8 @@ class PrayerTimesService {
         }
 
         guard let fileURL = url else {
-            print("DEBUG: Could not find \(filename).json in bundle")
-            print("DEBUG: Bundle path: \(Bundle.main.bundlePath)")
+            print("DEBUG: Could not find \(filename).json in widget bundle")
+            print("DEBUG: Widget bundle path: \(Bundle.main.bundlePath)")
             throw PrayerTimesError.fileNotFound(month: month)
         }
 
