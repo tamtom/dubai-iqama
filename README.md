@@ -15,6 +15,7 @@ Prayer times come straight from the official **Awqaf, Dubai Department of Islami
 - **Menu-bar status item** — at-a-glance "next prayer + countdown" right in the menu bar; click to drop a full popover.
 - **Widget extension** — small / medium / large widgets that mirror the main app's design, including the live sky arc.
 - **Configurable iqama notifications** — toggle reminders and pick the lead time (2, 5, 10, 15, 20, or 30 minutes before iqama) from a real Settings panel.
+- **In-app auto-update** — checks GitHub Releases on launch and once a day; when a newer version is published, a banner offers a one-click update that downloads the DMG, verifies it's our notarized build, swaps the app bundle, and relaunches — no manual re-download.
 - **Notarized & stapled** — distributed DMG is signed with a Developer ID Application certificate and notarized by Apple, so it opens cleanly on any Mac without Gatekeeper warnings.
 
 ## Screenshots
@@ -45,9 +46,11 @@ Medium widget on the desktop showing the sky arc, the next prayer name in Arabic
 
 ## Install
 
-1. Download the latest `Dubai-Iqama-1.0.dmg` from the [Releases page](https://github.com/tamtom/dubai-iqama/releases/latest).
+1. Download the latest DMG from the [Releases page](https://github.com/tamtom/dubai-iqama/releases/latest).
 2. Open the DMG and drag **Dubai Iqama** into your **Applications** folder.
 3. Launch from Spotlight or Launchpad. The first launch will ask for notification permission (used only for iqama reminders).
+
+After this first install, the app keeps itself up to date — future versions are offered in-app with a one-click update (see below).
 
 Optional: open the **Widget Gallery** (right-click the desktop → Edit Widgets) to add one of the three widget sizes.
 
@@ -89,9 +92,21 @@ Then:
 
 A `Dubai-Iqama-<version>.dmg` lands on your Desktop. `spctl --assess` reports `accepted` with `source=Notarized Developer ID`.
 
+## Updates
+
+`UpdateChecker` polls `https://api.github.com/repos/tamtom/dubai-iqama/releases/latest` on launch and every 24 h, comparing the published tag to the running `CFBundleShortVersionString`. When a newer version exists, `ContentView` shows an `UpdateBanner`.
+
+Pressing **Update** hands off to `UpdateInstaller`, which:
+
+1. Downloads the release's `.dmg` asset (with progress).
+2. Mounts it and **verifies** the app inside — `codesign --verify --deep --strict`, `spctl --assess` (notarization), and a Team ID match against `W5THJP5XXD`. Anything that fails verification is refused.
+3. Stages a copy, unmounts, then runs a detached helper that waits for the app to quit, atomically swaps the bundle in `/Applications`, clears quarantine, and relaunches the new version.
+
+Because self-updating requires writing to `/Applications` and spawning a helper, the **main app is not sandboxed** (it ships via Developer ID, not the App Store). The **widget extension stays sandboxed**, as macOS requires.
+
 ## Architecture
 
-- **Main app target** — SwiftUI window + status bar `NSPopover` hosted from `AppDelegate`. `CountdownManager` ticks on a `Timer` and publishes `CountdownSnapshot`s; views observe via `@StateObject`.
+- **Main app target** — SwiftUI window + status bar `NSPopover` hosted from `AppDelegate`. `CountdownManager` ticks on a `Timer` and publishes `CountdownSnapshot`s; views observe via `@StateObject`. `UpdateChecker` + `UpdateInstaller` provide the self-update flow.
 - **Widget extension** — `WidgetKit` timeline provider builds entries at each prayer transition. Shares the prayer-times JSON via a symlink (`widget/prayer_times_2026` → `../Dubai iqama/prayer_times_2026`) and the theme/sky-arc views via symlinks to `Dubai iqama/Shared/UI/`.
 - **Prayer data** — 12 monthly JSON files under `Dubai iqama/prayer_times_2026/`, one per Gregorian month, full year 2026 from the Awqaf Dubai endpoint. Each file carries the azan settings (iqama offsets) and a per-day record with Gregorian + Hijri dates and prayer times.
 - **Theme** — `Shared/UI/Theme.swift` interpolates a 12-keyframe palette through the day; `CelestialBackground.swift` composes the gradient + 8-point-star ornament + drifting starlight; `SkyArc.swift` draws the half-ellipse + prayer ticks + sun/moon disc; `WindowBackdrop.swift` is an `NSViewRepresentable` that makes the window non-opaque so the desktop wallpaper blurs through.

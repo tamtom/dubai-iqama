@@ -7,6 +7,7 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var countdownManager = CountdownManager.shared
+    @StateObject private var updateChecker = UpdateChecker.shared
     @Environment(\.openSettings) private var openSettings
     @State private var mock: MockScenario? = nil
 
@@ -39,8 +40,11 @@ struct ContentView: View {
                     .frame(width: 0, height: 0)
 
                 VStack(spacing: 18) {
+                    if let update = updateChecker.availableUpdate {
+                        UpdateBanner(update: update)
+                    }
+
                     header
-                        .padding(.top, 4)
 
                     SkyArcView(date: now,
                                todayPrayerTimes: day,
@@ -58,7 +62,7 @@ struct ContentView: View {
                     footer
                 }
                 .padding(.horizontal, 32)
-                .padding(.top, 36)        // clear the traffic-light region
+                .padding(.top, 44)               // sit below the traffic-light row
                 .padding(.bottom, 24)
             }
         }
@@ -398,6 +402,81 @@ private struct PulsingDot: View {
                     on.toggle()
                 }
             }
+    }
+}
+
+// Slim banner shown at the top of the window when a newer release exists on
+// GitHub. "Update" downloads the DMG, verifies it, swaps the app bundle, and
+// relaunches — all in-app.
+struct UpdateBanner: View {
+    let update: UpdateChecker.UpdateInfo
+    @StateObject private var installer = UpdateInstaller.shared
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: statusIcon)
+                .font(.system(size: 16))
+                .foregroundStyle(Theme.accentGold)
+                .symbolEffect(.pulse, options: .repeating, isActive: installer.isWorking)
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text(statusTitle)
+                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .foregroundStyle(Theme.textPrimary)
+                Text(statusDetail)
+                    .font(.system(size: 11))
+                    .foregroundStyle(Theme.textSecondary)
+            }
+
+            Spacer()
+
+            if installer.isWorking {
+                ProgressView()
+                    .controlSize(.small)
+                    .tint(Theme.accentGold)
+            } else {
+                Button(buttonLabel) { installer.install(update) }
+                    .buttonStyle(.glass(Glass.regular.tint(Theme.accentGold).interactive()))
+                    .font(.system(size: 12, weight: .semibold))
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .frame(maxWidth: .infinity)
+        .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .animation(.easeInOut(duration: 0.25), value: installer.phase)
+    }
+
+    private var statusIcon: String {
+        switch installer.phase {
+        case .failed: return "exclamationmark.triangle.fill"
+        default:      return "arrow.down.circle.fill"
+        }
+    }
+
+    private var statusTitle: String {
+        switch installer.phase {
+        case .downloading: return "Downloading update…"
+        case .verifying:   return "Verifying…"
+        case .installing:  return "Installing — app will relaunch"
+        case .failed:      return "Update failed"
+        case .idle:        return "Update available"
+        }
+    }
+
+    private var statusDetail: String {
+        switch installer.phase {
+        case .downloading(let p): return "\(Int(p * 100))% of Dubai Iqama \(update.version)"
+        case .verifying:          return "Checking Apple notarization…"
+        case .installing:         return "Swapping in the new version…"
+        case .failed(let msg):    return msg
+        case .idle:               return "Dubai Iqama \(update.version) is ready to install."
+        }
+    }
+
+    private var buttonLabel: String {
+        if case .failed = installer.phase { return "Retry" }
+        return "Update"
     }
 }
 

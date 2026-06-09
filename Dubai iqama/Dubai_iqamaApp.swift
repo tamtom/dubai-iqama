@@ -43,6 +43,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // design / data. Without this, widgets keep showing stale entries
         // from before the app was last updated.
         WidgetCenter.shared.reloadAllTimelines()
+
+        // Check GitHub for a newer release now and once per day.
+        UpdateChecker.shared.start()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
