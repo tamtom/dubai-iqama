@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import WidgetKit
 
 @main
 struct Dubai_iqamaApp: App {
@@ -15,6 +16,8 @@ struct Dubai_iqamaApp: App {
         WindowGroup {
             ContentView()
         }
+        .windowStyle(.hiddenTitleBar)
+        .windowResizability(.contentSize)
 
         Settings {
             SettingsView()
@@ -35,6 +38,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Preload current month data
         let currentMonth = Calendar.current.component(.month, from: Date())
         PrayerTimesService.shared.preloadMonth(currentMonth)
+
+        // Force the widget extension to refresh timelines with the latest
+        // design / data. Without this, widgets keep showing stale entries
+        // from before the app was last updated.
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -43,18 +51,63 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 }
 
 struct SettingsView: View {
-    var body: some View {
-        VStack(spacing: 20) {
-            Text("Dubai Iqama Settings")
-                .font(.headline)
+    @AppStorage(AppSettings.Keys.notificationsEnabled)
+    private var notificationsEnabled: Bool = AppSettings.Defaults.notificationsEnabled
+    @AppStorage(AppSettings.Keys.notificationLeadMinutes)
+    private var leadMinutes: Int = AppSettings.Defaults.notificationLeadMinutes
 
-            Text("Prayer times are loaded from local data files.")
-                .font(.caption)
-                .foregroundColor(.secondary)
+    var body: some View {
+        VStack(alignment: .leading, spacing: 24) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Dubai Iqama")
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                Text("Preferences")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+
+            Divider()
+
+            VStack(alignment: .leading, spacing: 16) {
+                Toggle(isOn: $notificationsEnabled) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Iqama reminders")
+                            .font(.body)
+                        Text("Notify me before the next iqama.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .toggleStyle(.switch)
+
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Remind me")
+                            .font(.body)
+                        Text("Lead time before iqama.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    Picker("", selection: $leadMinutes) {
+                        ForEach(AppSettings.leadMinuteChoices, id: \.self) { m in
+                            Text("\(m) minutes before").tag(m)
+                        }
+                    }
+                    .labelsHidden()
+                    .frame(width: 180)
+                    .disabled(!notificationsEnabled)
+                }
+            }
 
             Spacer()
+
+            Text("Prayer times are bundled from Awqaf, Dubai Department of Islamic Affairs.")
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
         }
-        .padding()
-        .frame(width: 300, height: 150)
+        .padding(24)
+        .frame(width: 460, height: 280)
     }
 }

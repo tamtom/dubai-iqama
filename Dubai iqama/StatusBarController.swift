@@ -26,8 +26,11 @@ class StatusBarController: NSObject {
 
     private func setupPopover() {
         popover = NSPopover()
-        popover.contentSize = NSSize(width: 300, height: 450)
+        popover.contentSize = NSSize(width: 320, height: 520)
         popover.behavior = .transient
+        // Vibrant dark chrome so the wallpaper blur behind it tints toward
+        // our dark celestial palette instead of fighting it.
+        popover.appearance = NSAppearance(named: .vibrantDark)
         popover.contentViewController = NSHostingController(
             rootView: StatusBarMenuView()
         )

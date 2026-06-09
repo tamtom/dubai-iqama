@@ -6,6 +6,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 
     private var hasNotifiedForCurrentIqama = false
     private var lastNotifiedPrayer: Prayer?
+    private var lastNotifiedLead: Int?
 
     private override init() {
         super.init()
@@ -27,6 +28,13 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
     // MARK: - Send Notification
 
     func checkAndNotifyForIqama(snapshot: CountdownSnapshot) {
+        guard AppSettings.notificationsEnabled, AppSettings.notificationLeadMinutes > 0 else {
+            hasNotifiedForCurrentIqama = false
+            lastNotifiedPrayer = nil
+            return
+        }
+        let lead = AppSettings.notificationLeadMinutes
+
         guard case .waitingForIqama(let prayer, _) = snapshot.phase else {
             // Reset when not in iqama phase
             hasNotifiedForCurrentIqama = false
@@ -34,26 +42,28 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
             return
         }
 
-        // Check if we already notified for this prayer's iqama
-        if hasNotifiedForCurrentIqama && lastNotifiedPrayer == prayer {
+        // Already fired for this prayer at the current lead setting.
+        if hasNotifiedForCurrentIqama && lastNotifiedPrayer == prayer && lastNotifiedLead == lead {
             return
         }
 
-        // Check if time remaining is 10 minutes or less (but more than 9 minutes to avoid repeat)
-        let tenMinutes: TimeInterval = 10 * 60
-        let nineMinutes: TimeInterval = 9 * 60
+        // Fire when remaining time enters the [lead-1m, lead] window. Using a 1-min
+        // band avoids re-firing as the countdown ticks across the threshold.
+        let upper: TimeInterval = TimeInterval(lead) * 60
+        let lower: TimeInterval = TimeInterval(max(0, lead - 1)) * 60
 
-        if snapshot.timeRemaining <= tenMinutes && snapshot.timeRemaining > nineMinutes {
-            sendIqamaNotification(for: prayer, minutesRemaining: 10)
+        if snapshot.timeRemaining <= upper && snapshot.timeRemaining > lower {
+            sendIqamaNotification(for: prayer, minutesRemaining: lead)
             hasNotifiedForCurrentIqama = true
             lastNotifiedPrayer = prayer
+            lastNotifiedLead = lead
         }
     }
 
     private func sendIqamaNotification(for prayer: Prayer, minutesRemaining: Int) {
         let content = UNMutableNotificationContent()
         content.title = "\(prayer.displayName) Iqama"
-        content.body = "\(minutesRemaining) minutes until \(prayer.displayName) Iqama"
+        content.body = "\(minutesRemaining) minute\(minutesRemaining == 1 ? "" : "s") until \(prayer.displayName) Iqama"
         content.sound = .default
         content.interruptionLevel = .timeSensitive
 
