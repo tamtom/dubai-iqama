@@ -51,23 +51,12 @@
 			);
 			target = 8BB42CB62F2109EE0043A040 /* widgetExtension */;
 		};
-		8BB42D3F2F21110D0043A040 /* Exceptions for "Dubai iqama" folder in "widgetExtension" target */ = {
+		8BB42D9F2F2222220043A040 /* Exceptions for "Dubai iqama" folder in "Dubai iqama" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				prayer_times_2026/month_01.json,
-				prayer_times_2026/month_02.json,
-				prayer_times_2026/month_03.json,
-				prayer_times_2026/month_04.json,
-				prayer_times_2026/month_05.json,
-				prayer_times_2026/month_06.json,
-				prayer_times_2026/month_07.json,
-				prayer_times_2026/month_08.json,
-				prayer_times_2026/month_09.json,
-				prayer_times_2026/month_10.json,
-				prayer_times_2026/month_11.json,
-				prayer_times_2026/month_12.json,
+				Info.plist,
 			);
-			target = 8BB42CB62F2109EE0043A040 /* widgetExtension */;
+			target = 8BB42CA42F2109750043A040 /* Dubai iqama */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -75,7 +64,10 @@
 		8BB42CA72F2109750043A040 /* Dubai iqama */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				8BB42D3F2F21110D0043A040 /* Exceptions for "Dubai iqama" folder in "widgetExtension" target */,
+				8BB42D9F2F2222220043A040 /* Exceptions for "Dubai iqama" folder in "Dubai iqama" target */,
+			);
+			explicitFolders = (
+				prayer_times_2026,
 			);
 			path = "Dubai iqama";
 			sourceTree = "<group>";
@@ -398,14 +390,13 @@
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Dubai Iqama";
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Dubai iqama/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.2.0;
+				MARKETING_VERSION = 1.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.tamimi.shared.Dubai-iqama";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -432,14 +423,13 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Dubai Iqama";
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Dubai iqama/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.2.0;
+				MARKETING_VERSION = 1.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.tamimi.shared.Dubai-iqama";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -471,7 +461,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.2;
-				MARKETING_VERSION = 1.2.0;
+				MARKETING_VERSION = 1.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.tamimi.shared.Dubai-iqama.widget";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -504,7 +494,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.2;
-				MARKETING_VERSION = 1.2.0;
+				MARKETING_VERSION = 1.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.tamimi.shared.Dubai-iqama.widget";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

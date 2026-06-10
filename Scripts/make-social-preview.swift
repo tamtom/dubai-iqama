@@ -77,18 +77,18 @@ func draw(_ s: String, _ rect: NSRect, size fs: CGFloat, weight: NSFont.Weight,
 let gold = rgb(0.99, 0.82, 0.42)
 let textSecondary = NSColor.white.withAlphaComponent(0.78)
 
-draw("DUBAI", NSRect(x: 80, y: 470, width: 560, height: 40), size: 22, weight: .bold,
+draw("PRAYER TIMES", NSRect(x: 80, y: 470, width: 560, height: 40), size: 22, weight: .bold,
      color: gold, tracking: 6)
-draw("Dubai Iqama", NSRect(x: 78, y: 392, width: 600, height: 80), size: 62, weight: .bold,
+draw("Iqama", NSRect(x: 78, y: 392, width: 600, height: 80), size: 62, weight: .bold,
      color: .white)
 draw("الفجر · الظهر · العصر · المغرب · العشاء",
      NSRect(x: 80, y: 350, width: 600, height: 34), size: 22, weight: .regular,
      color: textSecondary)
-draw("Prayer times & iqama countdown for Dubai,\nwith a celestial Liquid Glass UI.",
+draw("Location-aware prayer times & iqama countdown,\nwith a celestial Liquid Glass UI.",
      NSRect(x: 80, y: 250, width: 580, height: 80), size: 24, weight: .medium,
      color: NSColor.white.withAlphaComponent(0.92))
 
-for (i, line) in ["Menu-bar countdown", "Home-screen widgets", "Official Awqaf data"].enumerated() {
+for (i, line) in ["Menu-bar countdown", "Home-screen widgets", "Awqaf (UAE) · Aladhan worldwide"].enumerated() {
     let y = 150 - CGFloat(i) * 36
     // bullet dot
     cg.setFillColor(gold.cgColor)

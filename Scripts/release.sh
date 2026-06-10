@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build, sign, notarize, and staple a release DMG of Dubai Iqama.
+# Build, sign, notarize, and staple a release DMG of Iqama.
 #
 # Order matters: we notarize the .app (zipped) instead of the DMG because
 # notarytool's DMG preflight hangs on some networks / macOS combos. Once the
@@ -33,7 +33,7 @@ EXPORT="$WORK/export"
 APP="$EXPORT/Dubai iqama.app"
 ZIP="$WORK/Dubai-iqama.zip"
 STAGE="$WORK/stage"
-DMG="$HOME/Desktop/Dubai-Iqama-${VERSION}.dmg"
+DMG="$HOME/Desktop/Iqama-${VERSION}.dmg"
 
 trap 'echo; echo "Build artifacts: $WORK"' EXIT
 
@@ -79,7 +79,7 @@ rm -f "$DMG"
     -s "Scripts/dmg-settings.py" \
     -D app="$APP" \
     -D bg="$BG_PNG" \
-    "Dubai Iqama" \
+    "Iqama" \
     "$DMG"
 
 # Sign the DMG itself so Gatekeeper accepts it as one artifact.

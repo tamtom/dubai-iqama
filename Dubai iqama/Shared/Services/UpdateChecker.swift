@@ -20,7 +20,10 @@ final class UpdateChecker: ObservableObject {
     @Published private(set) var availableUpdate: UpdateInfo?
 
     private let owner = "tamtom"
-    private let repo = "dubai-iqama"
+    // Repo was renamed dubai-iqama → iqama. New builds poll the new URL directly; already-shipped
+    // builds poll the old URL and rely on GitHub's permanent redirect (do not re-create a
+    // `dubai-iqama` repo, or that redirect breaks).
+    private let repo = "iqama"
     private let checkInterval: TimeInterval = 24 * 60 * 60
     private var timer: Timer?
 
@@ -39,7 +42,7 @@ final class UpdateChecker: ObservableObject {
         guard let url = URL(string: "https://api.github.com/repos/\(owner)/\(repo)/releases/latest") else { return }
         var request = URLRequest(url: url)
         request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
-        request.setValue("Dubai-Iqama", forHTTPHeaderField: "User-Agent")
+        request.setValue("Iqama", forHTTPHeaderField: "User-Agent")
         request.cachePolicy = .reloadIgnoringLocalCacheData
         request.timeoutInterval = 15
 

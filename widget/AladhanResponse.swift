@@ -1,0 +1,1 @@
+../Dubai iqama/Shared/Models/AladhanResponse.swift

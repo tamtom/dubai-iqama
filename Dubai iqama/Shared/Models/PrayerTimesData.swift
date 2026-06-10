@@ -60,15 +60,38 @@ struct DailyPrayerTimes: Codable {
     let gMonthNameEn: String
     let gMonthNameAr: String
 
-    private static let dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-        formatter.timeZone = TimeZone.current  // Parse as local time, not UTC
-        return formatter
-    }()
+    /// IANA timezone the wall-clock strings should be parsed in. Absent in the bundled UAE
+    /// JSON (→ parsed in the device's current timezone, correct for users inside the UAE);
+    /// injected by `AladhanProvider` for non-UAE data so a manually-selected remote city still
+    /// yields correct absolute instants. Optional + defaulted, so it round-trips Codable without
+    /// breaking the bundled files (which never carry this key).
+    var sourceTimeZoneID: String? = nil
+
+    // Time strings are "yyyy-MM-dd'T'HH:mm:ss" local wall-clock. We cache one formatter per
+    // timezone id; parsing is read-only after configuration, guarded by a lock for the widget's
+    // background timeline thread.
+    private static let formatterLock = NSLock()
+    private static var formatters: [String: DateFormatter] = [:]
+
+    private static func formatter(forTimeZoneID id: String?) -> DateFormatter {
+        let key = id ?? "__current__"
+        formatterLock.lock()
+        defer { formatterLock.unlock() }
+        if let f = formatters[key] { return f }
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        f.timeZone = id.flatMap { TimeZone(identifier: $0) } ?? TimeZone.current
+        formatters[key] = f
+        return f
+    }
+
+    private var dateFormatter: DateFormatter {
+        Self.formatter(forTimeZoneID: sourceTimeZoneID)
+    }
 
     var gregorianDate: Date? {
-        Self.dateFormatter.date(from: gDate)
+        dateFormatter.date(from: gDate)
     }
 
     func prayerTime(for prayer: Prayer) -> Date? {
@@ -80,7 +103,7 @@ struct DailyPrayerTimes: Codable {
         case .maghrib: timeString = maghrib
         case .isha: timeString = isha
         }
-        return Self.dateFormatter.date(from: timeString)
+        return dateFormatter.date(from: timeString)
     }
 
     var isFriday: Bool {

@@ -1,9 +1,9 @@
-# dmgbuild settings for the Dubai Iqama installer DMG.
+# dmgbuild settings for the Iqama installer DMG.
 #
 # Invoked by Scripts/release.sh as:
 #   dmgbuild -s Scripts/dmg-settings.py \
 #            -D app=<path-to-.app> -D bg=<path-to-bg.png> \
-#            "Dubai Iqama" <output.dmg>
+#            "Iqama" <output.dmg>
 #
 # dmgbuild writes the .DS_Store directly (via the ds_store/mac_alias libs), so
 # it sets the window background, size, and icon positions WITHOUT Finder

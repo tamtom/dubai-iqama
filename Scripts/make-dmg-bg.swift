@@ -60,7 +60,7 @@ let hintAttrs: [NSAttributedString.Key: Any] = [
     .foregroundColor: NSColor.white.withAlphaComponent(0.85),
     .paragraphStyle: centered,
 ]
-NSAttributedString(string: "Drag Dubai Iqama into Applications", attributes: hintAttrs)
+NSAttributedString(string: "Drag Iqama into Applications", attributes: hintAttrs)
     .draw(in: NSRect(x: 0, y: 50, width: 660, height: 24))
 
 // Title at the top.
@@ -69,7 +69,7 @@ let titleAttrs: [NSAttributedString.Key: Any] = [
     .foregroundColor: NSColor.white,
     .paragraphStyle: centered,
 ]
-NSAttributedString(string: "Dubai Iqama", attributes: titleAttrs)
+NSAttributedString(string: "Iqama", attributes: titleAttrs)
     .draw(in: NSRect(x: 0, y: 340, width: 660, height: 30))
 
 NSGraphicsContext.restoreGraphicsState()

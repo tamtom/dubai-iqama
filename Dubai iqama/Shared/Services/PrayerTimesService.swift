@@ -9,7 +9,7 @@ enum PrayerTimesError: Error, LocalizedError {
     var errorDescription: String? {
         switch self {
         case .fileNotFound(let month):
-            return "Prayer times file for month \(month) not found"
+            return "Prayer times for month \(month) not available"
         case .invalidDateFormat:
             return "Invalid date format in prayer times data"
         case .noPrayerTimesAvailable:
@@ -20,59 +20,67 @@ enum PrayerTimesError: Error, LocalizedError {
     }
 }
 
+/// Cache key: the same month from different sources (emirate, or Aladhan city) is distinct.
+struct MonthKey: Hashable {
+    let sourceID: String
+    let year: Int
+    let month: Int
+}
+
+/// Facade over the active `PrayerDataProvider`. Downstream callers (CountdownManager, the
+/// widget timeline, the views) use the same methods and types as before — only the source
+/// of the monthly data changes underneath, based on the resolved location + settings.
 class PrayerTimesService {
     static let shared = PrayerTimesService()
 
-    private var cachedMonthData: [Int: PrayerTimesMonthData] = [:]
+    private var cache: [MonthKey: PrayerTimesMonthData] = [:]
     private let calendar = Calendar.current
 
     private init() {}
 
+    // MARK: - Active provider
+
+    private var _provider: PrayerDataProvider?
+
+    /// The active source, resolved lazily from settings and memoized. Call `refreshProvider()`
+    /// after a location / emirate / source change so the next read re-resolves.
+    var provider: PrayerDataProvider {
+        if let p = _provider { return p }
+        let p = Self.resolveProvider()
+        _provider = p
+        return p
+    }
+
+    /// Chooses the source from settings: UAE → bundled Awqaf for the resolved emirate;
+    /// outside the UAE → Aladhan (wired in Step 4). Always returns a usable provider.
+    static func resolveProvider() -> PrayerDataProvider {
+        if AppSettings.resolvedIsUAE {
+            return BundledAwqafProvider(emirate: AppSettings.selectedEmirate)
+        }
+        let loc = ResolvedLocation.current()
+        let method = CalculationMethod.resolved(setting: AppSettings.calcMethod, countryISO: loc.countryISO)
+        return AladhanProvider(location: loc, method: method)
+    }
+
+    /// Re-resolve the provider and drop cached months. Call when location/source settings change.
+    func refreshProvider() {
+        _provider = Self.resolveProvider()
+        cache.removeAll()
+    }
+
     // MARK: - Data Loading
 
+    func loadMonthData(year: Int, month: Int) throws -> PrayerTimesMonthData {
+        let key = MonthKey(sourceID: provider.sourceID, year: year, month: month)
+        if let cached = cache[key] { return cached }
+        let data = try provider.monthData(year: year, month: month)
+        cache[key] = data
+        return data
+    }
+
+    /// Back-compat: load a month for the current year (used by `preloadMonth`).
     func loadMonthData(for month: Int) throws -> PrayerTimesMonthData {
-        if let cached = cachedMonthData[month] {
-            return cached
-        }
-
-        let filename = String(format: "month_%02d", month)
-
-        // Try multiple loading strategies
-        var url: URL?
-
-        // Strategy 1: Folder reference (blue folder in Xcode)
-        url = Bundle.main.url(forResource: filename,
-                              withExtension: "json",
-                              subdirectory: "prayer_times_2026")
-
-        // Strategy 2: Files at root level (yellow group in Xcode)
-        if url == nil {
-            url = Bundle.main.url(forResource: filename, withExtension: "json")
-        }
-
-        // Strategy 3: Look in Resources folder
-        if url == nil {
-            url = Bundle.main.url(forResource: filename,
-                                  withExtension: "json",
-                                  subdirectory: "Resources/prayer_times_2026")
-        }
-
-        guard let fileURL = url else {
-            print("DEBUG: Could not find \(filename).json in bundle")
-            print("DEBUG: Bundle path: \(Bundle.main.bundlePath)")
-            throw PrayerTimesError.fileNotFound(month: month)
-        }
-
-        do {
-            let data = try Data(contentsOf: fileURL)
-            let decoder = JSONDecoder()
-            let monthData = try decoder.decode(PrayerTimesMonthData.self, from: data)
-            cachedMonthData[month] = monthData
-            return monthData
-        } catch let error as DecodingError {
-            print("DEBUG: Decoding error: \(error)")
-            throw PrayerTimesError.decodingError(error)
-        }
+        try loadMonthData(year: calendar.component(.year, from: Date()), month: month)
     }
 
     // MARK: - Prayer Time Lookup
@@ -82,21 +90,33 @@ class PrayerTimesService {
         let day = calendar.component(.day, from: date)
         let year = calendar.component(.year, from: date)
 
-        let monthData = try loadMonthData(for: month)
+        let monthData = try loadMonthData(year: year, month: month)
 
         return monthData.prayerData.first { dailyTimes in
             guard let gDate = dailyTimes.gregorianDate else { return false }
-            let gDay = calendar.component(.day, from: gDate)
-            let gMonth = calendar.component(.month, from: gDate)
-            let gYear = calendar.component(.year, from: gDate)
-            return gDay == day && gMonth == month && gYear == year
+            return calendar.component(.day, from: gDate) == day
+                && calendar.component(.month, from: gDate) == month
+                && calendar.component(.year, from: gDate) == year
         }
     }
 
     func getAzanSettings(for date: Date) throws -> AzanSettings {
+        let year = calendar.component(.year, from: date)
         let month = calendar.component(.month, from: date)
-        let monthData = try loadMonthData(for: month)
-        return monthData.azanSettings
+        let base = try loadMonthData(year: year, month: month).azanSettings
+        return effectiveAzanSettings(base: base)
+    }
+
+    /// Resolves which iqama offsets to use: the user's custom offsets if enabled, otherwise the
+    /// source's official offsets (Awqaf), or the UAE defaults for sources without iqama (Aladhan).
+    private func effectiveAzanSettings(base: AzanSettings) -> AzanSettings {
+        if AppSettings.customIqamaEnabled {
+            return AppSettings.customAzanSettings
+        }
+        if !provider.hasOfficialIqama {
+            return AzanSettings.uaeDefault
+        }
+        return base
     }
 
     // MARK: - Next Prayer Calculation
@@ -108,20 +128,18 @@ class PrayerTimesService {
 
         let settings = try getAzanSettings(for: date)
 
-        // Check each prayer in order for today
         for prayer in Prayer.orderedPrayers {
             if let azanTime = todayTimes.prayerTime(for: prayer) {
                 let iqamaMinutes = settings.iqamaMinutes(for: prayer, isFriday: todayTimes.isFriday)
                 let iqamaTime = azanTime.addingTimeInterval(TimeInterval(iqamaMinutes * 60))
 
-                // If we haven't passed the iqama time yet, this is our current/next prayer
                 if date < iqamaTime {
                     return (prayer, azanTime, iqamaTime, todayTimes)
                 }
             }
         }
 
-        // All prayers passed today, get tomorrow's Fajr
+        // All prayers passed today → tomorrow's Fajr.
         guard let tomorrow = calendar.date(byAdding: .day, value: 1, to: date),
               let tomorrowTimes = try getPrayerTimes(for: tomorrow),
               let fajrTime = tomorrowTimes.prayerTime(for: .fajr) else {
@@ -159,10 +177,10 @@ class PrayerTimesService {
     // MARK: - Cache Management
 
     func clearCache() {
-        cachedMonthData.removeAll()
+        cache.removeAll()
     }
 
     func preloadMonth(_ month: Int) {
-        try? _ = loadMonthData(for: month)
+        _ = try? loadMonthData(for: month)
     }
 }

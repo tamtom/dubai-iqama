@@ -116,8 +116,8 @@ struct PrayerWidget: Widget {
                     .opacity(0.55)
                 }
         }
-        .configurationDisplayName("Dubai Iqama")
-        .description("Countdown to next prayer and iqama for Dubai.")
+        .configurationDisplayName("Iqama")
+        .description("Countdown to the next prayer and iqama.")
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
     }
 }
@@ -312,7 +312,7 @@ struct LargeWidgetView: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline) {
                 VStack(alignment: .leading, spacing: 1) {
-                    Text("Dubai Iqama")
+                    Text("Iqama")
                         .font(.system(size: 13, weight: .semibold, design: .rounded))
                         .foregroundStyle(Theme.textPrimary)
                     Text(entry.hijriDate)

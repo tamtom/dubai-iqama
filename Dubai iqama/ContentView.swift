@@ -9,11 +9,14 @@ struct ContentView: View {
     @StateObject private var countdownManager = CountdownManager.shared
     @StateObject private var updateChecker = UpdateChecker.shared
     @Environment(\.openSettings) private var openSettings
-    @State private var mock: MockScenario? = nil
+
+    @AppStorage(AppSettings.Keys.locationConfirmed, store: AppSettings.shared)
+    private var locationConfirmed = false
+    @State private var showLocationSetup = false
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 30)) { ctx in
-            let now = mock?.time ?? ctx.date
+            let now = ctx.date
             let day = countdownManager.currentState?.todayPrayerTimes
             let sunrise = day?.prayerTime(for: .fajr).map { $0.addingTimeInterval(80 * 60) }
             let sunset = day?.prayerTime(for: .maghrib)
@@ -27,7 +30,7 @@ struct ContentView: View {
                 // 2. Celestial gradient tints the blurred wallpaper with the
                 //    time-of-day mood without fully blocking it.
                 CelestialBackground(
-                    timeOverride: mock?.time,
+                    timeOverride: nil,
                     bodyNormalizedX: body.x,
                     bodyIsDay: body.isDay
                 )
@@ -39,36 +42,42 @@ struct ContentView: View {
                 WindowTransparencyConfigurator()
                     .frame(width: 0, height: 0)
 
-                VStack(spacing: 18) {
-                    if let update = updateChecker.availableUpdate {
-                        UpdateBanner(update: update)
+                ScrollView {
+                    VStack(spacing: 18) {
+                        if let update = updateChecker.availableUpdate {
+                            UpdateBanner(update: update)
+                        }
+
+                        header
+
+                        SkyArcView(date: now,
+                                   todayPrayerTimes: day,
+                                   activePrayer: effectivePrayer)
+                            .frame(height: 110)
+
+                        countdownCard
+
+                        prayerRail
+
+                        footer
                     }
-
-                    header
-
-                    SkyArcView(date: now,
-                               todayPrayerTimes: day,
-                               activePrayer: effectivePrayer)
-                        .frame(height: 110)
-
-                    countdownCard
-
-                    prayerRail
-
-                    MockScenarioStrip(selected: $mock)
-
-                    Spacer(minLength: 0)
-
-                    footer
+                    .padding(.horizontal, 32)
+                    .padding(.top, 60)           // clear the macOS 26 window controls
+                    .padding(.bottom, 24)
+                    .frame(maxWidth: .infinity)
                 }
-                .padding(.horizontal, 32)
-                .padding(.top, 60)               // clear the macOS 26 window controls
-                .padding(.bottom, 24)
+                .scrollIndicators(.hidden)
             }
         }
-        .frame(minWidth: 480, minHeight: 760)
+        .frame(minWidth: 460, minHeight: 420)
         .preferredColorScheme(.dark)
-        .onAppear { countdownManager.refresh() }
+        .onAppear {
+            countdownManager.refresh()
+            if !locationConfirmed { showLocationSetup = true }
+        }
+        .sheet(isPresented: $showLocationSetup) {
+            LocationSetupView()
+        }
     }
 
     // MARK: - Header
@@ -76,7 +85,7 @@ struct ContentView: View {
     private var header: some View {
         HStack(alignment: .firstTextBaseline) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Dubai Iqama")
+                Text("Iqama")
                     .font(.system(size: 22, weight: .semibold, design: .rounded))
                     .foregroundStyle(Theme.textPrimary)
                 Text(dateString)
@@ -84,7 +93,6 @@ struct ContentView: View {
                     .foregroundStyle(Theme.textSecondary)
             }
             Spacer()
-            CrescentBadge()
         }
     }
 
@@ -102,15 +110,7 @@ struct ContentView: View {
 
     private var countdownCard: some View {
         Group {
-            if mock != nil {
-                countdownBody(
-                    prayer: effectivePrayer ?? .fajr,
-                    isIqama: effectiveIsIqama,
-                    countdownText: effectiveCountdownText,
-                    day: countdownManager.currentState?.todayPrayerTimes,
-                    settings: countdownManager.currentState?.azanSettings
-                )
-            } else if let snapshot = countdownManager.currentState {
+            if let snapshot = countdownManager.currentState {
                 countdownBody(
                     prayer: snapshot.phase.prayer,
                     isIqama: snapshot.phase.isIqamaPhase,
@@ -134,9 +134,8 @@ struct ContentView: View {
         .glassEffect(.clear.interactive(), in: RoundedRectangle(cornerRadius: 28, style: .continuous))
     }
 
-    private var effectivePrayer: Prayer? { mock?.prayer ?? countdownManager.currentState?.phase.prayer }
-    private var effectiveIsIqama: Bool { mock?.isIqamaPhase ?? (countdownManager.currentState?.phase.isIqamaPhase ?? false) }
-    private var effectiveCountdownText: String { mock?.formattedRemaining ?? (countdownManager.currentState?.formattedTimeRemaining ?? "—") }
+    private var effectivePrayer: Prayer? { countdownManager.currentState?.phase.prayer }
+    private var effectiveIsIqama: Bool { countdownManager.currentState?.phase.isIqamaPhase ?? false }
 
     @ViewBuilder
     private func countdownBody(prayer: Prayer, isIqama: Bool, countdownText: String,
@@ -303,87 +302,7 @@ struct ContentView: View {
         if let t = countdownManager.currentState?.todayPrayerTimes {
             return "\(t.areaNameEn) · \(t.emirateNameEn)"
         }
-        return "Dubai · United Arab Emirates"
-    }
-}
-
-// MARK: - Small accent components
-
-private struct CrescentBadge: View {
-    var body: some View {
-        ZStack {
-            Circle()
-                .fill(Theme.cardFill)
-                .overlay(Circle().stroke(Theme.cardStroke, lineWidth: 1))
-                .frame(width: 38, height: 38)
-            Image(systemName: "moon.stars.fill")
-                .font(.system(size: 16))
-                .foregroundStyle(
-                    LinearGradient(colors: [Theme.glowSoft, Theme.accentGold],
-                                   startPoint: .topLeading, endPoint: .bottomTrailing)
-                )
-                .symbolEffect(.pulse, options: .repeating)
-        }
-    }
-}
-
-// Horizontal strip of preset scenarios + a "Live" reset chip. Lets you
-// scrub through every visual state of the app without waiting for real time.
-struct MockScenarioStrip: View {
-    @Binding var selected: MockScenario?
-    @Namespace private var chipNamespace
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 6) {
-                Image(systemName: "wand.and.stars")
-                    .font(.system(size: 10))
-                Text("Preview states")
-                    .font(.system(size: 10, weight: .semibold))
-                    .tracking(1.2)
-                    .textCase(.uppercase)
-            }
-            .foregroundStyle(Theme.textMuted)
-
-            ScrollView(.horizontal, showsIndicators: false) {
-                // Sharing one GlassEffectContainer lets the chips visibly
-                // morph/merge as you click between them — the signature
-                // Liquid Glass interaction.
-                GlassEffectContainer(spacing: 6) {
-                    HStack(spacing: 6) {
-                        chip(label: "Live", id: "live",
-                             active: selected == nil) { selected = nil }
-                        ForEach(MockScenario.presets) { scenario in
-                            chip(label: scenario.label,
-                                 id: scenario.label,
-                                 active: selected?.id == scenario.id) {
-                                withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
-                                    selected = scenario
-                                }
-                            }
-                        }
-                    }
-                    .padding(.vertical, 2)
-                }
-            }
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        .glassEffect(.clear, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-    }
-
-    private func chip(label: String, id: String, active: Bool, tap: @escaping () -> Void) -> some View {
-        Button(action: tap) {
-            Text(label)
-                .font(.system(size: 11, weight: active ? .semibold : .medium, design: .rounded))
-                .foregroundStyle(active ? Color.black : Theme.textPrimary)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-        }
-        .buttonStyle(.glass(active
-                            ? Glass.regular.tint(Theme.accentGold).interactive()
-                            : Glass.clear.interactive()))
-        .glassEffectID(id, in: chipNamespace)
+        return "Locating…"
     }
 }
 
@@ -466,11 +385,11 @@ struct UpdateBanner: View {
 
     private var statusDetail: String {
         switch installer.phase {
-        case .downloading(let p): return "\(Int(p * 100))% of Dubai Iqama \(update.version)"
+        case .downloading(let p): return "\(Int(p * 100))% of Iqama \(update.version)"
         case .verifying:          return "Checking Apple notarization…"
         case .installing:         return "Swapping in the new version…"
         case .failed(let msg):    return msg
-        case .idle:               return "Dubai Iqama \(update.version) is ready to install."
+        case .idle:               return "Iqama \(update.version) is ready to install."
         }
     }
 
