@@ -1,1 +1,1 @@
-../Dubai iqama/Shared/Services/AppGroup.swift
+../Iqama/Shared/Services/AppGroup.swift

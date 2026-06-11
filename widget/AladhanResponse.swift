@@ -1,1 +1,1 @@
-../Dubai iqama/Shared/Models/AladhanResponse.swift
+../Iqama/Shared/Models/AladhanResponse.swift

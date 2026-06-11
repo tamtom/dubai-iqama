@@ -1,1 +1,1 @@
-../Dubai iqama/Shared/UI/SkyArc.swift
+../Iqama/Shared/UI/SkyArc.swift

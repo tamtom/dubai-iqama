@@ -1,1 +1,1 @@
-../Dubai iqama/Shared/Models/Prayer.swift
+../Iqama/Shared/Models/Prayer.swift

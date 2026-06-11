@@ -1,1 +1,1 @@
-../Dubai iqama/Shared/UI/CelestialBackground.swift
+../Iqama/Shared/UI/CelestialBackground.swift

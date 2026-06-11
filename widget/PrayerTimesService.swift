@@ -1,1 +1,1 @@
-../Dubai iqama/Shared/Services/PrayerTimesService.swift
+../Iqama/Shared/Services/PrayerTimesService.swift

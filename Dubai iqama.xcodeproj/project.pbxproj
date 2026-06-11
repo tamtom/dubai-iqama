@@ -69,7 +69,7 @@
 			explicitFolders = (
 				prayer_times_2026,
 			);
-			path = "Dubai iqama";
+			path = Iqama;
 			sourceTree = "<group>";
 		};
 		8BB42CBD2F2109EE0043A040 /* widget */ = {
@@ -391,7 +391,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "Dubai iqama/Info.plist";
+				INFOPLIST_FILE = "Iqama/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -424,7 +424,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "Dubai iqama/Info.plist";
+				INFOPLIST_FILE = "Iqama/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",

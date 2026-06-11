@@ -1,1 +1,1 @@
-../Dubai iqama/Shared/Models/PrayerTimesData.swift
+../Iqama/Shared/Models/PrayerTimesData.swift

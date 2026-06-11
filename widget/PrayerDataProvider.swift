@@ -1,1 +1,1 @@
-../Dubai iqama/Shared/Services/PrayerDataProvider.swift
+../Iqama/Shared/Services/PrayerDataProvider.swift

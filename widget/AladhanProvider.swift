@@ -1,1 +1,1 @@
-../Dubai iqama/Shared/Services/AladhanProvider.swift
+../Iqama/Shared/Services/AladhanProvider.swift

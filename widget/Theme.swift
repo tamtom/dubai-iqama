@@ -1,1 +1,1 @@
-../Dubai iqama/Shared/UI/Theme.swift
+../Iqama/Shared/UI/Theme.swift

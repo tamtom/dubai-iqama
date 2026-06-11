@@ -1,1 +1,1 @@
-../Dubai iqama/Shared/Models/Emirate.swift
+../Iqama/Shared/Models/Emirate.swift

@@ -1,1 +1,1 @@
-../Dubai iqama/Shared/Settings/AppSettings.swift
+../Iqama/Shared/Settings/AppSettings.swift

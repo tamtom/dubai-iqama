@@ -1,1 +1,1 @@
-../Dubai iqama/Shared/UI/IslamicStarOverlay.swift
+../Iqama/Shared/UI/IslamicStarOverlay.swift
