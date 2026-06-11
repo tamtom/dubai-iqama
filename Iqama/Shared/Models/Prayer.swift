@@ -29,6 +29,16 @@ enum Prayer: String, CaseIterable, Codable {
         }
     }
 
+    var previous: Prayer {
+        switch self {
+        case .fajr: return .isha
+        case .zuhr: return .fajr
+        case .asr: return .zuhr
+        case .maghrib: return .asr
+        case .isha: return .maghrib
+        }
+    }
+
     static var orderedPrayers: [Prayer] {
         [.fajr, .zuhr, .asr, .maghrib, .isha]
     }

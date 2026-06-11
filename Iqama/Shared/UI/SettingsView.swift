@@ -50,6 +50,14 @@ struct SettingsView: View {
     @AppStorage(AppSettings.Keys.notificationLeadMinutes)
     private var leadMinutes = AppSettings.Defaults.notificationLeadMinutes
 
+    // Prayer check-in (nagging)
+    @AppStorage(AppSettings.Keys.nagFajr) private var nagFajr = AppSettings.Defaults.nagFajr
+    @AppStorage(AppSettings.Keys.nagZuhr) private var nagZuhr = AppSettings.Defaults.nagZuhr
+    @AppStorage(AppSettings.Keys.nagAsr) private var nagAsr = AppSettings.Defaults.nagAsr
+    @AppStorage(AppSettings.Keys.nagMaghrib) private var nagMaghrib = AppSettings.Defaults.nagMaghrib
+    @AppStorage(AppSettings.Keys.nagIsha) private var nagIsha = AppSettings.Defaults.nagIsha
+    @AppStorage(AppSettings.Keys.nagIntervalMinutes) private var nagInterval = AppSettings.Defaults.nagIntervalMinutes
+
     @ObservedObject private var location = LocationManager.shared
 
     private var isManual: Bool { locationMode == AppSettings.LocationMode.manual.rawValue }
@@ -60,6 +68,7 @@ struct SettingsView: View {
             if !isUAE { methodSection }
             iqamaSection
             notificationsSection
+            nagSection
             Section {
                 Text(isUAE
                      ? "Prayer times for the UAE come from Awqaf (official static data)."
@@ -69,7 +78,10 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .frame(width: 500, height: 640)
+        // Flexible height: a fixed frame taller than the (persisted) window clips the bottom
+        // sections with no way to scroll. This keeps the form scrollable + the window resizable.
+        .frame(width: 500)
+        .frame(minHeight: 420, idealHeight: 620, maxHeight: .infinity)
         .navigationTitle("Iqama")
     }
 
@@ -167,6 +179,25 @@ struct SettingsView: View {
             }
             .disabled(!notificationsEnabled)
         }
+    }
+
+    private var nagSection: some View {
+        Section("Prayer check-in") {
+            Text("After iqama, keep asking “Did you pray?” until you confirm — stops when the next prayer comes in.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Toggle("Fajr", isOn: $nagFajr)
+            Toggle("Dhuhr", isOn: $nagZuhr)
+            Toggle("Asr", isOn: $nagAsr)
+            Toggle("Maghrib", isOn: $nagMaghrib)
+            Toggle("Isha", isOn: $nagIsha)
+            Picker("Ask every", selection: $nagInterval) {
+                ForEach(AppSettings.nagIntervalChoices, id: \.self) { m in
+                    Text("\(m) minutes").tag(m)
+                }
+            }
+        }
+        .disabled(!notificationsEnabled)
     }
 
     // MARK: - Apply

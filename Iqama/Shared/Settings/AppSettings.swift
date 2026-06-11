@@ -12,6 +12,16 @@ enum AppSettings {
         static let notificationLeadMinutes = "notificationLeadMinutes"
         static let notificationsEnabled = "notificationsEnabled"
 
+        // Prayer check-in (nagging)
+        static let nagFajr = "nagFajr"
+        static let nagZuhr = "nagZuhr"
+        static let nagAsr = "nagAsr"
+        static let nagMaghrib = "nagMaghrib"
+        static let nagIsha = "nagIsha"
+        static let nagIntervalMinutes = "nagIntervalMinutes"
+        static let nagResolvedWindow = "nagResolvedWindow"  // last prayer window confirmed prayed
+        static let checkInOnboarded = "checkInOnboarded"    // saw the Prayer Check-in intro sheet
+
         // Location
         static let locationConfirmed = "locationConfirmed"  // user finished first-run setup
         static let locationMode = "locationMode"            // "auto" | "manual"
@@ -40,6 +50,14 @@ enum AppSettings {
         static let notificationLeadMinutes = 10
         static let notificationsEnabled = true
 
+        // Nagging: only Dhuhr + Asr by default; other prayers keep the plain reminder.
+        static let nagFajr = false
+        static let nagZuhr = true
+        static let nagAsr = true
+        static let nagMaghrib = false
+        static let nagIsha = false
+        static let nagIntervalMinutes = 15
+
         static let locationMode = "auto"
         static let selectedEmirate = Emirate.dubai.slug
         static let calcMethod = -1   // auto by country
@@ -58,6 +76,7 @@ enum AppSettings {
     // Friendly choices we render in the settings pickers.
     static let leadMinuteChoices: [Int] = [2, 5, 10, 15, 20, 30]
     static let iqamaChoices: [Int] = Array(0...45)
+    static let nagIntervalChoices: [Int] = [5, 10, 15, 20, 30]
 
     // MARK: - Stores
 
@@ -74,6 +93,44 @@ enum AppSettings {
 
     static var notificationsEnabled: Bool {
         notif.object(forKey: Keys.notificationsEnabled) as? Bool ?? Defaults.notificationsEnabled
+    }
+
+    // MARK: - Prayer check-in (nagging)
+
+    static func nagKey(for prayer: Prayer) -> String {
+        switch prayer {
+        case .fajr: return Keys.nagFajr
+        case .zuhr: return Keys.nagZuhr
+        case .asr: return Keys.nagAsr
+        case .maghrib: return Keys.nagMaghrib
+        case .isha: return Keys.nagIsha
+        }
+    }
+
+    static func nagDefault(for prayer: Prayer) -> Bool {
+        switch prayer {
+        case .fajr: return Defaults.nagFajr
+        case .zuhr: return Defaults.nagZuhr
+        case .asr: return Defaults.nagAsr
+        case .maghrib: return Defaults.nagMaghrib
+        case .isha: return Defaults.nagIsha
+        }
+    }
+
+    /// Whether the "did you pray?" follow-up loop is enabled for this prayer.
+    static func nagEnabled(for prayer: Prayer) -> Bool {
+        notif.object(forKey: nagKey(for: prayer)) as? Bool ?? nagDefault(for: prayer)
+    }
+
+    /// Minutes between "did you pray?" follow-ups (also the delay of the first one after iqama).
+    static var nagIntervalMinutes: Int {
+        notif.object(forKey: Keys.nagIntervalMinutes) as? Int ?? Defaults.nagIntervalMinutes
+    }
+
+    /// The last prayer window the user confirmed (survives relaunch so we don't re-nag).
+    static var nagResolvedWindow: String? {
+        get { notif.string(forKey: Keys.nagResolvedWindow) }
+        set { notif.set(newValue, forKey: Keys.nagResolvedWindow) }
     }
 
     // MARK: - Location

@@ -46,8 +46,8 @@ class CountdownManager: ObservableObject {
             currentState = newState
             error = nil
 
-            // Check for iqama notification
-            NotificationManager.shared.checkAndNotifyForIqama(snapshot: newState)
+            // Pre-iqama reminder + "did you pray?" nag loop
+            NotificationManager.shared.tick(snapshot: newState)
         } catch {
             self.error = error
             currentState = nil

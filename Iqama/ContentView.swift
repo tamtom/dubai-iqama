@@ -8,11 +8,23 @@ import SwiftUI
 struct ContentView: View {
     @StateObject private var countdownManager = CountdownManager.shared
     @StateObject private var updateChecker = UpdateChecker.shared
+    @ObservedObject private var checkIn = NotificationManager.shared
     @Environment(\.openSettings) private var openSettings
 
     @AppStorage(AppSettings.Keys.locationConfirmed, store: AppSettings.shared)
     private var locationConfirmed = false
     @State private var showLocationSetup = false
+
+    // Prayer check-in
+    @AppStorage(AppSettings.Keys.checkInOnboarded) private var checkInOnboarded = false
+    @State private var showCheckInSetup = false
+    @AppStorage(AppSettings.Keys.nagFajr) private var nagFajr = AppSettings.Defaults.nagFajr
+    @AppStorage(AppSettings.Keys.nagZuhr) private var nagZuhr = AppSettings.Defaults.nagZuhr
+    @AppStorage(AppSettings.Keys.nagAsr) private var nagAsr = AppSettings.Defaults.nagAsr
+    @AppStorage(AppSettings.Keys.nagMaghrib) private var nagMaghrib = AppSettings.Defaults.nagMaghrib
+    @AppStorage(AppSettings.Keys.nagIsha) private var nagIsha = AppSettings.Defaults.nagIsha
+    @AppStorage(AppSettings.Keys.nagIntervalMinutes) private var nagInterval = AppSettings.Defaults.nagIntervalMinutes
+    @AppStorage(AppSettings.Keys.notificationsEnabled) private var notificationsEnabled = AppSettings.Defaults.notificationsEnabled
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 30)) { ctx in
@@ -57,7 +69,13 @@ struct ContentView: View {
 
                         countdownCard
 
+                        if let pending = checkIn.pendingCheckIn {
+                            checkInPendingCard(pending)
+                        }
+
                         prayerRail
+
+                        checkInCTACard
 
                         footer
                     }
@@ -73,10 +91,20 @@ struct ContentView: View {
         .preferredColorScheme(.dark)
         .onAppear {
             countdownManager.refresh()
-            if !locationConfirmed { showLocationSetup = true }
+            if !locationConfirmed {
+                showLocationSetup = true
+            } else if !checkInOnboarded {
+                showCheckInSetup = true
+            }
         }
-        .sheet(isPresented: $showLocationSetup) {
+        .sheet(isPresented: $showLocationSetup, onDismiss: {
+            // First-run funnel: location first, then introduce Prayer Check-in.
+            if !checkInOnboarded { showCheckInSetup = true }
+        }) {
             LocationSetupView()
+        }
+        .sheet(isPresented: $showCheckInSetup) {
+            CheckInSetupView()
         }
     }
 
@@ -206,6 +234,92 @@ struct ContentView: View {
                 .buttonStyle(.borderedProminent)
                 .tint(Theme.accentEmerald)
         }
+    }
+
+    // MARK: - Prayer check-in
+
+    /// Live, unanswered check-in: the in-app twin of the notification, with the answers
+    /// inline (banners vanish in seconds unless the user switched the style to Alerts).
+    @ViewBuilder
+    private func checkInPendingCard(_ pending: NotificationManager.CheckInState) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: pending.awaitingConfirmation ? "questionmark.circle.fill" : "figure.walk.motion")
+                .font(.system(size: 18))
+                .foregroundStyle(Theme.accentGold)
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text(pending.awaitingConfirmation
+                     ? "Did you pray \(pending.prayer.displayName)?"
+                     : "\(pending.prayer.displayName) iqama is coming up")
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    .foregroundStyle(Theme.textPrimary)
+                Text(pending.awaitingConfirmation
+                     ? "Confirm to stop the reminders."
+                     : "Commit now and the check-in stands down.")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Theme.textSecondary)
+            }
+
+            Spacer()
+
+            Button("Later") { checkIn.snoozeCheckIn() }
+                .buttonStyle(.plain)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(Theme.textSecondary)
+
+            Button(pending.awaitingConfirmation ? "Yes, Wallah" : "Wallah, going now") {
+                checkIn.confirmPrayed()
+            }
+            .buttonStyle(.glass(Glass.regular.tint(Theme.accentGold).interactive()))
+            .font(.system(size: 12, weight: .semibold))
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .frame(maxWidth: .infinity)
+        .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .transition(.opacity.combined(with: .move(edge: .top)))
+        .animation(.easeInOut(duration: 0.25), value: pending)
+    }
+
+    /// Main entry point for the feature: shows its live status, opens the onboarding sheet.
+    private var checkInCTACard: some View {
+        Button { showCheckInSetup = true } label: {
+            HStack(spacing: 14) {
+                Image(systemName: "checkmark.seal.fill")
+                    .font(.system(size: 20))
+                    .foregroundStyle(Theme.accentGold)
+
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Prayer Check-in")
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        .foregroundStyle(Theme.textPrimary)
+                    Text(checkInStatusText)
+                        .font(.system(size: 11))
+                        .foregroundStyle(Theme.textMuted)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(Theme.textMuted)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity)
+            .contentShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .glassEffect(.clear.interactive(), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+    }
+
+    private var checkInStatusText: String {
+        if !checkInOnboarded { return "Set up “Did you pray?” follow-ups" }
+        let enabled = [(nagFajr, "Fajr"), (nagZuhr, "Dhuhr"), (nagAsr, "Asr"),
+                       (nagMaghrib, "Maghrib"), (nagIsha, "Isha")]
+            .filter(\.0).map(\.1)
+        if enabled.isEmpty || !notificationsEnabled { return "Off" }
+        return enabled.joined(separator: ", ") + " · every \(nagInterval) min"
     }
 
     // MARK: - Prayer rail

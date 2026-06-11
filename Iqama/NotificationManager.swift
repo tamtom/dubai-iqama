@@ -1,34 +1,223 @@
 import Foundation
+import Combine
 import UserNotifications
 
-class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
+/// Sends the pre-iqama reminder and, for nag-enabled prayers, runs the "did you pray?"
+/// follow-up loop: the pre-iqama reminder gains commitment actions, the first confirmation
+/// fires at iqama + interval, and it re-asks every interval until the user confirms
+/// ("Yes, Wallah") or the prayer's window ends (the next prayer's azan).
+///
+/// The same state drives the in-app check-in card: `pendingCheckIn` is published whenever
+/// there's an unanswered commitment/confirmation, so the UI can offer the answers inline
+/// (macOS banners vanish after a few seconds unless the user sets the style to Alerts).
+class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterDelegate {
     static let shared = NotificationManager()
 
+    /// What the in-app card should show right now (nil = nothing pending / snoozed).
+    struct CheckInState: Equatable {
+        let prayer: Prayer
+        let awaitingConfirmation: Bool  // false → pre-iqama commitment stage
+    }
+
+    @Published private(set) var pendingCheckIn: CheckInState?
+
+    // MARK: - Categories / actions
+
+    private enum CategoryID {
+        static let preIqama = "PRE_IQAMA"       // pre-iqama reminder with commitment actions
+        static let didYouPray = "DID_YOU_PRAY"  // post-iqama confirmation
+    }
+
+    private enum ActionID {
+        static let goingToPray = "GOING_TO_PRAY"  // "Wallah, going to pray now" — stops the loop
+        static let remindLater = "REMIND_LATER"   // pre-iqama "Remind me later" — loop proceeds
+        static let prayedYes = "PRAYED_YES"       // "Yes, Wallah" — stops the loop
+        static let remindAgain = "REMIND_AGAIN"   // confirmation "Remind me later" — re-ask in one interval
+    }
+
+    // MARK: - State
+
+    // Pre-iqama reminder dedupe (one banner per prayer at the configured lead).
     private var hasNotifiedForCurrentIqama = false
     private var lastNotifiedPrayer: Prayer?
     private var lastNotifiedLead: Int?
 
+    /// One nag window is live at a time: it opens at the prayer's azan (so the pre-iqama
+    /// banner can carry its key) and closes at the NEXT prayer's azan.
+    private struct NagWindow {
+        let prayer: Prayer
+        let key: String                  // "Zuhr|2026-06-11" — unique per prayer + day
+        let iqamaTime: Date
+        var resolved: Bool               // user committed to pray / confirmed praying
+        var nextAskAt: Date              // when the next "did you pray?" fires
+        var snoozedUntil: Date?          // hides the in-app card after "remind me later"
+        var askCount = 0
+        var deliveredIDs: [String] = []  // confirmation banners we can clear once resolved
+    }
+
+    private var window: NagWindow?
+
     private override init() {
         super.init()
         UNUserNotificationCenter.current().delegate = self
+        registerCategories()
+    }
+
+    private func registerCategories() {
+        let going = UNNotificationAction(identifier: ActionID.goingToPray, title: "Wallah, going to pray now")
+        let later = UNNotificationAction(identifier: ActionID.remindLater, title: "Remind me later")
+        let preIqama = UNNotificationCategory(identifier: CategoryID.preIqama,
+                                              actions: [going, later], intentIdentifiers: [])
+
+        let prayed = UNNotificationAction(identifier: ActionID.prayedYes, title: "Yes, Wallah")
+        let again = UNNotificationAction(identifier: ActionID.remindAgain, title: "Remind me later")
+        let didYouPray = UNNotificationCategory(identifier: CategoryID.didYouPray,
+                                                actions: [prayed, again], intentIdentifiers: [])
+
+        UNUserNotificationCenter.current().setNotificationCategories([preIqama, didYouPray])
     }
 
     // MARK: - Permission
 
-    func requestPermission() {
+    func requestPermission(completion: ((Bool) -> Void)? = nil) {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
-            if granted {
-                print("Notification permission granted")
-            } else if let error = error {
+            if let error = error {
                 print("Notification permission error: \(error)")
+            }
+            if let completion {
+                DispatchQueue.main.async { completion(granted) }
             }
         }
     }
 
-    // MARK: - Send Notification
+    // MARK: - In-app card actions
 
-    func checkAndNotifyForIqama(snapshot: CountdownSnapshot) {
-        guard AppSettings.notificationsEnabled, AppSettings.notificationLeadMinutes > 0 else {
+    /// "Wallah, going to pray now" / "Yes, Wallah" tapped inside the app.
+    func confirmPrayed() {
+        resolveWindow()
+    }
+
+    /// "Later" tapped inside the app: hide the card until the next ask is due.
+    func snoozeCheckIn() {
+        guard var w = window, !w.resolved else { return }
+        if Date() >= w.iqamaTime {
+            w.nextAskAt = Date().addingTimeInterval(nagInterval)
+        }
+        // Pre-iqama: the first post-iqama ask (iqama + interval) is the "later".
+        w.snoozedUntil = w.nextAskAt
+        window = w
+        publishState()
+    }
+
+    // MARK: - Per-second tick (from CountdownManager, main thread)
+
+    func tick(snapshot: CountdownSnapshot) {
+        guard AppSettings.notificationsEnabled else {
+            hasNotifiedForCurrentIqama = false
+            lastNotifiedPrayer = nil
+            closeWindow()
+            return
+        }
+        syncWindow(to: snapshot)
+        checkPreIqama(snapshot: snapshot)
+        checkNagLoop()
+        publishState()
+    }
+
+    /// Keeps `window` aligned with the countdown phase: open it at azan, keep it through the
+    /// post-iqama stretch, drop it when the next prayer's azan arrives (or nagging is off).
+    private func syncWindow(to snapshot: CountdownSnapshot) {
+        let now = Date()
+        switch snapshot.phase {
+        case .waitingForIqama(let prayer, let iqamaTime):
+            // Azan has passed — this prayer's window opens; any previous window just ended.
+            guard AppSettings.nagEnabled(for: prayer) else { closeWindow(); return }
+            let key = Self.windowKey(for: prayer, on: now)
+            guard window?.key != key else { return }
+            closeWindow()
+            window = NagWindow(prayer: prayer, key: key, iqamaTime: iqamaTime,
+                               resolved: AppSettings.nagResolvedWindow == key,
+                               nextAskAt: iqamaTime.addingTimeInterval(nagInterval))
+
+        case .waitingForAzan(let upcoming, let azanTime):
+            // Between a prayer's iqama and the next azan — `upcoming.previous`'s window is live.
+            let prayer = upcoming.previous
+            guard AppSettings.nagEnabled(for: prayer) else { closeWindow(); return }
+            // Anchor the key to the prayer's own day (isha's window crosses midnight).
+            let anchor = upcoming == .fajr ? azanTime.addingTimeInterval(-86400) : now
+            let key = Self.windowKey(for: prayer, on: anchor)
+            guard window?.key != key else { return }
+            // App launched mid-window: rebuild state; first ask comes one interval from now.
+            closeWindow()
+            window = NagWindow(prayer: prayer, key: key, iqamaTime: now,
+                               resolved: AppSettings.nagResolvedWindow == key,
+                               nextAskAt: now.addingTimeInterval(nagInterval))
+        }
+    }
+
+    private func checkNagLoop() {
+        guard var w = window, !w.resolved, Date() >= w.nextAskAt else { return }
+        w.askCount += 1
+        let id = "nag-confirm-\(w.key)-\(w.askCount)"
+        w.deliveredIDs.append(id)
+        w.nextAskAt = Date().addingTimeInterval(nagInterval)
+        w.snoozedUntil = nil  // the ask is due again — surface the in-app card too
+        window = w
+
+        let minutes = AppSettings.nagIntervalMinutes
+        let content = UNMutableNotificationContent()
+        content.title = "Did you pray \(w.prayer.displayName)?"
+        content.body = "\(w.prayer.arabicName) — confirm to stop the reminders, or I'll check again in \(minutes) min."
+        content.sound = .default
+        content.interruptionLevel = .timeSensitive
+        content.categoryIdentifier = CategoryID.didYouPray
+        content.userInfo = ["windowKey": w.key]
+        deliver(content, identifier: id)
+    }
+
+    private var nagInterval: TimeInterval {
+        TimeInterval(AppSettings.nagIntervalMinutes * 60)
+    }
+
+    /// Marks the live window answered, persists it, and clears lingering banners.
+    private func resolveWindow() {
+        guard var w = window, !w.resolved else { return }
+        w.resolved = true
+        AppSettings.nagResolvedWindow = w.key  // survives relaunch — don't re-nag
+        if !w.deliveredIDs.isEmpty {
+            UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: w.deliveredIDs)
+            w.deliveredIDs = []
+        }
+        window = w
+        publishState()
+    }
+
+    /// Clears any lingering confirmation banners and drops the window.
+    private func closeWindow() {
+        if let ids = window?.deliveredIDs, !ids.isEmpty {
+            UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: ids)
+        }
+        window = nil
+        publishState()
+    }
+
+    /// Mirrors the window into the published card state (only on change — this runs every second).
+    private func publishState() {
+        var state: CheckInState?
+        if let w = window, !w.resolved {
+            let now = Date()
+            let snoozed = w.snoozedUntil.map { now < $0 } ?? false
+            if !snoozed {
+                state = CheckInState(prayer: w.prayer, awaitingConfirmation: now >= w.iqamaTime)
+            }
+        }
+        if state != pendingCheckIn { pendingCheckIn = state }
+    }
+
+    // MARK: - Pre-iqama reminder
+
+    private func checkPreIqama(snapshot: CountdownSnapshot) {
+        guard AppSettings.notificationLeadMinutes > 0 else {
             hasNotifiedForCurrentIqama = false
             lastNotifiedPrayer = nil
             return
@@ -66,13 +255,16 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         content.body = "\(minutesRemaining) minute\(minutesRemaining == 1 ? "" : "s") until \(prayer.displayName) Iqama"
         content.sound = .default
         content.interruptionLevel = .timeSensitive
+        // Nag-enabled prayers get the commitment actions on the same banner.
+        if let w = window, w.prayer == prayer {
+            content.categoryIdentifier = CategoryID.preIqama
+            content.userInfo = ["windowKey": w.key]
+        }
+        deliver(content, identifier: "iqama-\(prayer.rawValue)-\(Date().timeIntervalSince1970)")
+    }
 
-        let request = UNNotificationRequest(
-            identifier: "iqama-\(prayer.rawValue)-\(Date().timeIntervalSince1970)",
-            content: content,
-            trigger: nil  // Deliver immediately
-        )
-
+    private func deliver(_ content: UNNotificationContent, identifier: String) {
+        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: nil)
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
                 print("Failed to send notification: \(error)")
@@ -87,5 +279,41 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
                                 willPresent notification: UNNotification,
                                 withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         completionHandler([.banner, .sound])
+    }
+
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                didReceive response: UNNotificationResponse,
+                                withCompletionHandler completionHandler: @escaping () -> Void) {
+        let action = response.actionIdentifier
+        let key = response.notification.request.content.userInfo["windowKey"] as? String
+        DispatchQueue.main.async { [weak self] in
+            self?.handleResponse(action: action, windowKey: key)
+            completionHandler()
+        }
+    }
+
+    private func handleResponse(action: String, windowKey: String?) {
+        // Responses from stale windows (yesterday's banner, a prayer whose window ended) are moot.
+        guard let windowKey, let w = window, w.key == windowKey else { return }
+        switch action {
+        case ActionID.goingToPray, ActionID.prayedYes:
+            resolveWindow()
+        case ActionID.remindLater, ActionID.remindAgain:
+            snoozeCheckIn()  // pre-iqama: first ask stays at iqama + interval; after: pushes it out
+        default:
+            break  // clicked the banner body or dismissed — counts as no response
+        }
+    }
+
+    // MARK: - Window keys
+
+    private static let dayFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        return f
+    }()
+
+    private static func windowKey(for prayer: Prayer, on day: Date) -> String {
+        "\(prayer.rawValue)|\(dayFormatter.string(from: day))"
     }
 }
