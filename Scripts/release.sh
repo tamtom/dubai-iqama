@@ -30,7 +30,7 @@ VERSION="${VERSION:-1.0}"
 WORK="$(mktemp -d -t dubai_iqama_release.XXXXXX)"
 ARCHIVE="$WORK/Dubai-iqama.xcarchive"
 EXPORT="$WORK/export"
-APP="$EXPORT/Dubai iqama.app"
+APP=""                                   # resolved after export (product name may vary)
 ZIP="$WORK/Dubai-iqama.zip"
 STAGE="$WORK/stage"
 DMG="$HOME/Desktop/Iqama-${VERSION}.dmg"
@@ -52,6 +52,11 @@ xcodebuild \
     -archivePath "$ARCHIVE" \
     -exportPath  "$EXPORT" \
     -exportOptionsPlist "Scripts/ExportOptions.plist" >/dev/null
+
+# Resolve the exported .app by extension (its name follows PRODUCT_NAME → "Iqama.app").
+APP="$(find "$EXPORT" -maxdepth 1 -name '*.app' | head -1)"
+[ -d "$APP" ] || { echo "No .app found in export dir $EXPORT"; exit 1; }
+echo "    exported: $(basename "$APP")"
 
 codesign --verify --deep --strict --verbose=2 "$APP"
 

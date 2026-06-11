@@ -37,7 +37,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		8BB42CA52F2109750043A040 /* Dubai iqama.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Dubai iqama.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8BB42CA52F2109750043A040 /* Iqama.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Iqama.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8BB42CB72F2109EE0043A040 /* widgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = widgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		8BB42CB92F2109EE0043A040 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		8BB42CBB2F2109EE0043A040 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -115,7 +115,7 @@
 		8BB42CA62F2109750043A040 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8BB42CA52F2109750043A040 /* Dubai iqama.app */,
+				8BB42CA52F2109750043A040 /* Iqama.app */,
 				8BB42CB72F2109EE0043A040 /* widgetExtension.appex */,
 			);
 			name = Products;
@@ -154,7 +154,7 @@
 			packageProductDependencies = (
 			);
 			productName = "Dubai iqama";
-			productReference = 8BB42CA52F2109750043A040 /* Dubai iqama.app */;
+			productReference = 8BB42CA52F2109750043A040 /* Iqama.app */;
 			productType = "com.apple.product-type.application";
 		};
 		8BB42CB62F2109EE0043A040 /* widgetExtension */ = {
@@ -396,9 +396,9 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.3.0;
+				MARKETING_VERSION = 1.3.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.tamimi.shared.Dubai-iqama";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Iqama;
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -429,9 +429,9 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.3.0;
+				MARKETING_VERSION = 1.3.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.tamimi.shared.Dubai-iqama";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Iqama;
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -461,7 +461,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.2;
-				MARKETING_VERSION = 1.3.0;
+				MARKETING_VERSION = 1.3.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.tamimi.shared.Dubai-iqama.widget";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -494,7 +494,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.2;
-				MARKETING_VERSION = 1.3.0;
+				MARKETING_VERSION = 1.3.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.tamimi.shared.Dubai-iqama.widget";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

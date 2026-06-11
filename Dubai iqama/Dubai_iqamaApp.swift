@@ -30,6 +30,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var statusBarController: StatusBarController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // One-time migration of the on-disk name (Dubai iqama.app -> Iqama.app). If it relocates,
+        // the app quits and relaunches from the new path, so skip the rest of startup.
+        if AppRelocator.migrateIfNeeded() { return }
+
         // Initialize status bar
         statusBarController = StatusBarController()
 
